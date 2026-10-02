@@ -2,8 +2,8 @@
 #include <WiFi.h>
 #include <ESP32Ping.h>
 // Sustituye por los datos de la WiFi de tu móvil o laboratorio
-const char* ssid = "PORTÁTIL 3145";
-const char* password = "+18874bP";
+const char* ssid = "iPhone de Daniel";
+const char* password = "12763020";
 
 const char* host_a_pingear = "www.google.com";
 

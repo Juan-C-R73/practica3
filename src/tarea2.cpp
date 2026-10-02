@@ -1,78 +1,46 @@
-// Librerías nativas del ESP32 para WiFi y gestión del tiempo
+#include <Arduino.h>
 #include <WiFi.h>
-#include <time.h>
+#include <WiFiUdp.h>
+#include <NTPClient.h>
 
-// Sustituye por los datos de tu WiFi
-const char* ssid = "PORTÁTIL 3145";
-const char* password = "+18874bP";
+const char* ssid = "TU_WIFI";
+const char* password = "TU_CONTRASEÑA";
 
-// Servidores NTP (Como muestra el esquema de la práctica)
-const char* ntpServer1 = "pool.ntp.org";
-const char* ntpServer2 = "time.nist.gov";
+WiFiUDP ntpUDP;
+// Cambiamos a time.google.com que suele ser más rápido y permisivo
+NTPClient timeClient(ntpUDP, "time.google.com", 7200, 60000);
 
-// Cadena POSIX para la Zona Horaria de España (Península)
-// CET-1 (UTC+1 en invierno) | CEST (UTC+2 en verano)
-// M3.5.0 (Cambio en marzo) | M10.5.0/3 (Cambio en octubre)
-const char* tzInfo = "CET-1CEST,M3.5.0,M10.5.0/3";
+void setup() {
+  Serial.begin(115200);
+  delay(2000); // Pausa para que el Monitor Serie arranque limpio
 
-void connectWiFi() {
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(ssid, password);
+  Serial.print("\nConectando a: ");
+  Serial.println(ssid);
   
-  Serial.print("Conectando al WiFi");
+  WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
   }
   Serial.println("\n¡WiFi Conectado!");
-  Serial.print("IP Local: ");
-  Serial.println(WiFi.localIP());
-}
-
-void syncTime() {
-  Serial.println("Sincronizando con el servidor NTP...");
   
-  // Configuramos los servidores de donde extraeremos la hora
-  configTime(0, 0, ntpServer1, ntpServer2);
+  // Pausa de seguridad para que el router termine de asignar las rutas
+  delay(2000);
 
-  // Aplicamos nuestra zona horaria (España)
-  setenv("TZ", tzInfo, 1);
-  tzset();
-
-  // Esperamos hasta que el ESP32 reciba una fecha lógica 
-  // (Mayor al 1 de Enero de 2020)
-  time_t now = 0;
-  while (time(&now) < 1577836800) {
-    delay(500);
+  timeClient.begin();
+  
+  Serial.print("Forzando petición de hora al servidor NTP");
+  // forceUpdate() insiste hasta que el servidor responde de verdad
+  while(!timeClient.forceUpdate()) {
     Serial.print(".");
+    delay(1500); // Espera 1.5s entre intentos para no saturar al servidor
   }
-  Serial.println("\n¡Hora sincronizada con éxito!");
-}
-
-void printDateTime() {
-  struct tm timeinfo;
-  
-  // getLocalTime extrae la hora del reloj interno del ESP32
-  if (!getLocalTime(&timeinfo, 2000)) {
-    Serial.println("Error al obtener la hora local");
-    return;
-  }
-  
-  char formattedTime[80];
-  // Formateamos la hora: "Día de la semana, Mes Día Año Hora:Min:Seg"
-  strftime(formattedTime, sizeof(formattedTime), "%A, %d %B %Y %H:%M:%S", &timeinfo);
-  Serial.println(formattedTime);
-}
-
-void setup() {
-  Serial.begin(115200);
-  delay(1000);
-
-  connectWiFi();
-  syncTime(); // Sincroniza la hora a través de Internet
+  Serial.println("\n¡Hora capturada con éxito!");
 }
 
 void loop() {
-  printDateTime();
-  delay(1000); // Imprime la hora cada segundo
+  // Ahora el loop solo se dedica a imprimir la hora que ya hemos conseguido
+  Serial.print("Hora actual: ");
+  Serial.println(timeClient.getFormattedTime());
+  delay(1000);
 }
