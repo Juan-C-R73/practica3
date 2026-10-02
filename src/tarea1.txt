@@ -1,0 +1,50 @@
+#include <Arduino.h>
+#include <WiFi.h>
+#include <ESP32Ping.h>
+// Sustituye por los datos de la WiFi de tu móvil o laboratorio
+const char* ssid = "PORTÁTIL 3145";
+const char* password = "+18874bP";
+
+const char* host_a_pingear = "www.google.com";
+
+void setup() {
+  Serial.begin(115200);
+  delay(1000); // Pequeña pausa para dar tiempo a que se abra el Monitor Serie
+
+  
+  Serial.print("1. Conectando a la red WiFi: ");
+  Serial.println(ssid);
+
+  // Le pasamos las credenciales al chip de radio del ESP32
+  WiFi.begin(ssid, password);
+
+  // El ESP32 tarda unos segundos en negociar con el router.
+  // Lo dejamos bloqueado imprimiendo puntitos hasta que el estado sea "Conectado"
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+
+  Serial.println("\n\n¡Conexión WiFi establecida con éxito!");
+  
+  // TAREA 1A: Extraer y mostrar la IP asignada por el router
+  Serial.print("2. Dirección IP local asignada: ");
+  Serial.println(WiFi.localIP());
+
+  // TAREA 1B: Comprobar conectividad con Google mediante ping
+  Serial.print("\n3. Haciendo ping a ");
+  Serial.print(host_a_pingear);
+  Serial.println(" para comprobar salida a Internet...");
+
+  // La función Ping.ping() envía paquetes ICMP al servidor y devuelve 'true' si hay respuesta
+  if (Ping.ping(host_a_pingear)) {
+    Serial.println("¡Ping exitoso! El ESP32 tiene acceso a Internet.");
+  } else {
+    Serial.println("Error en el ping. Conectado a la WiFi, pero sin salida a Internet.");
+  }
+}
+
+void loop() {
+  // Para esta primera tarea de prueba de red, el loop se queda vacío.
+  // El código solo se ejecuta una vez al encender la placa.
+}
