@@ -1,0 +1,92 @@
+#include <Arduino.h>
+#include <WiFi.h>
+#include <time.h>
+
+// Datos Red Wifi
+const char* ssid = "DIGIFIBRA-SGDT";
+const char* password = "3X6x2CfudG";
+
+// Datos del servidor 
+const char* pc_ip = "192.168.1.131"; // IP del PC
+const int pc_port = 455;            // Puerto configurado en SocketTest
+
+// Configuración NTP (Hora de España peninsular)
+const char* ntpServer = "pool.ntp.org";
+const char* tzInfo = "CET-1CEST,M3.5.0,M10.5.0/3"; 
+
+WiFiClient cliente;
+
+bool enviarHora = false;       // Interruptor para mandar datos
+unsigned long ultimoEnvio = 0; // Cronómetro para controlar el segundo exacto
+
+void setup() {
+  Serial.begin(115200);
+  
+  // --- CONEXIÓN WIFI ---
+  Serial.print("\nConectando al WiFi");
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("\n¡WiFi Conectado!");
+
+  // --- SINCRONIZACIÓN NTP ---
+  Serial.print("Sincronizando hora con Internet");
+  configTime(0, 0, ntpServer);
+  setenv("TZ", tzInfo, 1);
+  tzset();
+  //Bucle para comprobar si la fecha actual es menor al año 2020
+  time_t now = 0;
+  while (time(&now) < 1577836800) {
+    delay(500);
+    Serial.print(".");
+  }
+  //Cuando la fecha sea mayor significa que ya se ha conectado al servidor ntp
+  Serial.println("\n¡Hora sincronizada con éxito!");
+  Serial.println("ESPERANDO COMANDOS DEL PC ('start' o 'stop')...");
+}
+
+void loop() {
+  // Mantener la conexión abierta con SocketTest
+  if (!cliente.connected()) {
+    cliente.connect(pc_ip, pc_port);
+  }
+
+  // Comprobar si han escrito algo en el PC
+  if (cliente.connected() && cliente.available()) {
+    // Leemos el mensaje que ha llegado por red
+    String mensaje = cliente.readStringUntil('\n'); 
+    
+    // trim() limpia espacios en blanco y saltos de línea invisibles (\r\n)
+    mensaje.trim(); 
+
+    // Analizamos el mensaje recibido
+    if (mensaje == "start") {
+      enviarHora = true; // Encendemos el interruptor
+      Serial.println("\n[+] Comando START recibido. Empezando a enviar...");
+    } 
+    else if (mensaje == "stop") {
+      enviarHora = false; // Apagamos el interruptor
+      Serial.println("\n[-] Comando STOP recibido. Envío pausado.");
+    }
+  }
+
+  // Enviar la hora SOLO si el interruptor está activado
+  if (enviarHora && cliente.connected()) {
+    
+    // Comprobamos si ya ha pasado 1 segundo (1000 milisegundos) desde la última vez
+    if (millis() - ultimoEnvio >= 1000) {
+      ultimoEnvio = millis(); // Reseteamos el cronómetro
+      
+      struct tm timeinfo;
+      if (getLocalTime(&timeinfo)) {
+        char horaFormateada[80];
+        strftime(horaFormateada, sizeof(horaFormateada), "Hora ESP32: %H:%M:%S", &timeinfo);
+        
+        cliente.println(horaFormateada); // Enviamos al PC
+        Serial.println("Enviado al PC: " + String(horaFormateada));
+      }
+    }
+  }
+}
