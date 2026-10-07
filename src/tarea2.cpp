@@ -3,8 +3,8 @@
 #include <WiFiUdp.h>
 #include <NTPClient.h>
 
-const char* ssid = "TU_WIFI";
-const char* password = "TU_CONTRASEÑA";
+const char* ssid = "DIGIFIBRA-SGDT";
+const char* password = "3X6x2CfudG";
 
 WiFiUDP ntpUDP;
 // Cambiamos a time.google.com que suele ser más rápido y permisivo
