@@ -3,11 +3,11 @@
 #include <time.h>
 
 // 1. Datos de tu red WiFi
-const char* ssid = "PORTÁTIL 3145";
-const char* password = "+18874bP";
+const char* ssid = "DIGIFIBRA-SGDT";
+const char* password = "3X6x2CfudG";
 
 // 2. Datos del servidor (Tu PC con SocketTest)
-const char* pc_ip = "192.168.78.1"; // ¡CÁMBIALO por la IP de tu PC!
+const char* pc_ip = "192.168.1.131"; // IP del PC
 const int pc_port = 455;            // El puerto que configuraste en SocketTest
 
 // 3. Configuración NTP (Hora de España peninsular)
@@ -54,10 +54,14 @@ void loop() {
   char horaFormateada[80];
   strftime(horaFormateada, sizeof(horaFormateada), "Hora ESP32: %H:%M:%S", &timeinfo);
 
-  // 3. Abrir la conexión con el PC, enviar el dato y cerrar
-  if (cliente.connect(pc_ip, pc_port)) {
+  // 3. Comprobamos si la puerta ya está abierta. Si no, conectamos.
+  if (!cliente.connected()) {
+    cliente.connect(pc_ip, pc_port);
+  }
+
+  // 4. Si el canal está abierto y funcionando, enviamos el dato
+  if (cliente.connected()) {
     cliente.println(horaFormateada);
-    cliente.stop(); // Cerramos la conexión tras enviar el paquete
     Serial.println("Enviado al PC: " + String(horaFormateada));
   } else {
     Serial.println("Fallo de conexión. ¿Está SocketTest encendido?");
