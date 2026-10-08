@@ -1,0 +1,37 @@
+import socket
+
+# Configuración del servidor
+HOST = '0.0.0.0'  # Escucha en todas las interfaces de red del PC
+PORT = 8080       # El mismo puerto que en el ESP32
+
+# Crear el socket TCP
+with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s: #sock stream para protocolo TCP
+    #Libera el puerto si se detiene el script
+    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    #Asocia el servidor a la direccion y puertos dados
+    s.bind((HOST, PORT))
+    #Modo de espera para recibir clientes
+    s.listen()
+    
+    print(f"=== Servidor TCP Python iniciado ===")
+    print(f"Esperando datos del ESP32 en el puerto {PORT}...")
+
+    while True:
+        # El programa se queda bloqueado aquí esperando a que el ESP32 se conecte
+        conn, addr = s.accept()
+        #Asegura que se cierre el canal cuando termine la comunicación con ESP32
+        with conn:
+            print(f"\n[+] Nuevo cliente conectado desde: {addr[0]}")
+            
+            while True:
+                # Recibimos paquetes de hasta 1024 bytes
+                data = conn.recv(1024)
+                
+                # Si data está vacío, significa que el ESP32 se ha desconectado
+                if not data:
+                    print(f"[-] Cliente {addr[0]} desconectado.")
+                    break
+                
+                # Decodificamos los bytes a texto y quitamos saltos de línea extra
+                mensaje = data.decode('utf-8').strip()
+                print(f"Datos del Acelerómetro -> {mensaje}")
