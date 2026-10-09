@@ -3,11 +3,11 @@
 #include <time.h>
 
 // Datos red WiFi
-const char* ssid = "DIGIFIBRA-SGDT";
-const char* password = "3X6x2CfudG";
+const char* ssid = "iPhone de Daniel";
+const char* password = "12763020";
 
 // Datos del servidor Python (PC)
-const char* pc_ip = "192.168.1.131"; // IP actual del PC
+const char* pc_ip = "172.20.10.2"; // IP actual del PC
 const int pc_port = 8080;            // Puerto para python
 
 WiFiClient cliente;

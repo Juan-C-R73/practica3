@@ -3,11 +3,11 @@
 #include <time.h>
 
 // Datos Red Wifi
-const char* ssid = "DIGIFIBRA-SGDT";
-const char* password = "3X6x2CfudG";
+const char* ssid = "iPhone de Daniel";
+const char* password = "12763020";
 
 // Datos del servidor 
-const char* pc_ip = "192.168.1.131"; // IP del PC
+const char* pc_ip = "172.20.10.2"; // IP del PC
 const int pc_port = 455;            // Puerto configurado en SocketTest
 
 // Configuración NTP (Hora de España peninsular)
@@ -32,7 +32,7 @@ void setup() {
   Serial.println("\n¡WiFi Conectado!");
 
   // --- SINCRONIZACIÓN NTP ---
-  Serial.print("Sincronizando hora con Internet");
+  /*Serial.print("Sincronizando hora con Internet");
   configTime(0, 0, ntpServer);
   setenv("TZ", tzInfo, 1);
   tzset();
@@ -43,7 +43,7 @@ void setup() {
     Serial.print(".");
   }
   //Cuando la fecha sea mayor significa que ya se ha conectado al servidor ntp
-  Serial.println("\n¡Hora sincronizada con éxito!");
+  Serial.println("\n¡Hora sincronizada con éxito!");*/
   Serial.println("ESPERANDO COMANDOS DEL PC ('start' o 'stop')...");
 }
 
@@ -79,14 +79,18 @@ void loop() {
     if (millis() - ultimoEnvio >= 1000) {
       ultimoEnvio = millis(); // Reseteamos el cronómetro
       
-      struct tm timeinfo;
+      String horaInventada = "Hora ESP32: 15:30:00";
+
+      cliente.println(horaInventada); // Enviamos al PC
+      Serial.println("Enviado al PC: " + horaInventada);
+      /*struct tm timeinfo;
       if (getLocalTime(&timeinfo)) {
         char horaFormateada[80];
         strftime(horaFormateada, sizeof(horaFormateada), "Hora ESP32: %H:%M:%S", &timeinfo);
         
         cliente.println(horaFormateada); // Enviamos al PC
         Serial.println("Enviado al PC: " + String(horaFormateada));
-      }
+      }*/
     }
   }
 }

@@ -5,10 +5,10 @@
 #include <sys/time.h> 
 
 // Datos de red WiFi
-const char* ssid = "DIGIFIBRA-SGDT";
-const char* password = "3X6x2CfudG";
+const char* ssid = "iPhone de Daniel";
+const char* password = "12763020";
 
-// 2. Configuración NTP (Hora de España peninsular)
+// Configuración NTP (Hora de España peninsular)
 const char* ntpServer = "pool.ntp.org";
 const char* tzInfo = "CET-1CEST,M3.5.0,M10.5.0/3";
 
@@ -17,13 +17,13 @@ WebServer server(80);
 
 // Mostrar la página principal ("/") 
 void mostrarPagina() {
-  struct tm timeinfo;
+  /*struct tm timeinfo;
   char horaStr[16] = "00:00:00";
   //Se guarda la hora
   if (getLocalTime(&timeinfo)) {
     strftime(horaStr, sizeof(horaStr), "%H:%M:%S", &timeinfo);
-  }
-
+  }*/
+  String horaInventada = "Hora ESP32: 15:30:00";
   // Construcción de la página HTML 
   String html = "<!DOCTYPE html><html lang='es'><head>";
   html += "<meta charset='UTF-8'>";
@@ -38,7 +38,7 @@ void mostrarPagina() {
   html += "</style></head><body>";
   
   html += "<h2>Servidor Web ESP32</h2>";
-  html += "<h1>" + String(horaStr) + "</h1>";
+  html += "<h1>" + String(horaInventada) + "</h1>";
   //Para enviar la orden de reset si se toca el botón
   html += "<form action='/reset' method='POST'>";
   html += "<button type='submit'>Resetear hora a 0:00</button>";
@@ -84,7 +84,7 @@ void setup() {
   Serial.println("\n¡WiFi Conectado!");
 
   // --- SINCRONIZACIÓN NTP INICIAL ---
-  Serial.print("Sincronizando hora inicial con Internet");
+  /*Serial.print("Sincronizando hora inicial con Internet");
   configTime(0, 0, ntpServer);
   setenv("TZ", tzInfo, 1);
   tzset();
@@ -94,7 +94,7 @@ void setup() {
     delay(500);
     Serial.print(".");
   }
-  Serial.println("\n¡Hora sincronizada!");
+  Serial.println("\n¡Hora sincronizada!");*/
 
   // --- CONFIGURACIÓN DE RUTAS DEL SERVIDOR WEB ---
   server.on("/", HTTP_GET, mostrarPagina);
